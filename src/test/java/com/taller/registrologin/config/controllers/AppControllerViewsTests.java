@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taller.registrologin.models.Users;
+import com.taller.registrologin.models.UserRole;
 import com.taller.registrologin.repositories.UsersRepository;
 
 @SpringBootTest
@@ -50,9 +51,30 @@ class AppControllerViewsTests {
                 .andExpect(view().name("register_form"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/process_register")));
 
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login_form"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"email\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"password\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/login\"")));
+
         mockMvc.perform(get("/css/app.css"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("text/css"));
+    }
+
+    @Test
+    void customLoginShowsAuthenticationAndLogoutFeedback() throws Exception {
+        mockMvc.perform(get("/login").param("error", ""))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login_form"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "El correo o la contraseña no son correctos.")));
+
+        mockMvc.perform(get("/login").param("logout", ""))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "Cerraste sesión correctamente.")));
     }
 
     @Test
@@ -65,10 +87,14 @@ class AppControllerViewsTests {
                         .param("firstName", "Prueba")
                         .param("lastName", "Vista")
                         .param("email", email)
+                        .param("role", "ADMIN")
                         .param("password", password))
                 .andExpect(status().isOk())
                 .andExpect(view().name("registration_success"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Registro exitoso")));
+
+        Users registeredUser = usersRepository.findByEmail(email).orElseThrow();
+        assertThat(registeredUser.getRole()).isEqualTo(UserRole.USER);
 
         String duplicatePassword = "must-not-be-redisplayed";
         mockMvc.perform(post("/process_register")
@@ -109,10 +135,64 @@ class AppControllerViewsTests {
         mockMvc.perform(get("/users"))
                 .andExpect(status().is3xxRedirection());
 
-        mockMvc.perform(get("/users").with(user("viewer@example.test")))
+        mockMvc.perform(get("/users").with(user("viewer@example.test").roles("USER")))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/users").with(user("admin@example.test").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users_list"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Usuarios registrados")));
+    }
+
+    @Test
+    void restrictsProfileAndAdminPagesByRole() throws Exception {
+        mockMvc.perform(get("/profile"))
+                .andExpect(status().is3xxRedirection());
+
+        mockMvc.perform(get("/profile").with(user("viewer@example.test").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("profile"));
+
+        mockMvc.perform(get("/profile").with(user("admin@example.test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("profile"));
+
+        mockMvc.perform(get("/admin").with(user("viewer@example.test").roles("USER")))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/admin").with(user("admin@example.test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin"));
+    }
+
+    @Test
+    void seededAdminCanLogInWithAdminRoleAndIsTheOnlyAdministrator() throws Exception {
+        Users admin = usersRepository.findByEmail("admin@registrologin.com").orElseThrow();
+        assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
+        assertThat(passwordEncoder.matches("admin123", admin.getPassword())).isTrue();
+        assertThat(usersRepository.findAll().stream()
+                .filter(registeredUser -> registeredUser.getRole() == UserRole.ADMIN))
+                .hasSize(1);
+
+        MvcResult loginResult = mockMvc.perform(post("/login")
+                        .with(csrf())
+                        .param("email", "admin@registrologin.com")
+                        .param("password", "admin123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .redirectedUrl("/profile"))
+                .andReturn();
+
+        MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+        assertThat(session).isNotNull();
+
+        mockMvc.perform(get("/profile").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("ADMIN")));
+        mockMvc.perform(get("/admin").session(session))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/users").session(session))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -129,28 +209,37 @@ class AppControllerViewsTests {
         assertThat(user.getPassword()).startsWith("$2");
         assertThat(passwordEncoder.matches(rawPassword, user.getPassword())).isTrue();
 
+        mockMvc.perform(post("/login")
+                        .with(csrf())
+                        .param("email", email)
+                        .param("password", "incorrect-password"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .redirectedUrl("/login?error"));
+
         MvcResult loginResult = mockMvc.perform(post("/login")
                         .with(csrf())
                         .param("email", email)
                         .param("password", rawPassword))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/users"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/profile"))
                 .andReturn();
 
         MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
         assertThat(session).isNotNull();
 
-        mockMvc.perform(get("/users").session(session))
+        mockMvc.perform(get("/profile").session(session))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString(email)))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Sesion")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Temporal")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(email)));
+
+        mockMvc.perform(get("/users").session(session))
+                .andExpect(status().isForbidden());
 
         mockMvc.perform(post("/logout").with(csrf()).session(session))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/"));
 
-        mockMvc.perform(get("/users").session(session))
+        mockMvc.perform(get("/profile").session(session))
                 .andExpect(status().is3xxRedirection());
     }
 }

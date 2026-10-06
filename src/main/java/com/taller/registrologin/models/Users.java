@@ -2,6 +2,8 @@ package com.taller.registrologin.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +40,10 @@ public class Users {
     @NotBlank(message = "El apellido es obligatorio.")
     @Size(max = 50, message = "El apellido no puede superar 50 caracteres.")
     private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role = UserRole.USER;
 
     public Long getId() {
         return id;
@@ -77,5 +83,13 @@ public class Users {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 }

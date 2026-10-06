@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.taller.registrologin.models.Users;
+import com.taller.registrologin.models.UserRole;
 import com.taller.registrologin.repositories.UsersRepository;
 
 @Service 
@@ -24,6 +25,7 @@ public class UserService {
             throw new IllegalArgumentException("Email ya existente");
         }
 
+        user.setRole(UserRole.USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return usersRepository.save(user);
     }

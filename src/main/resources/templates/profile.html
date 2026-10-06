@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Mi perfil | RegistroSeguro</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Registro<span>Seguro</span></a>
+    <form th:action="@{/logout}" method="post" class="inline-form">
+        <button class="button button-small button-secondary" type="submit">Cerrar sesión</button>
+    </form>
+</header>
+
+<main class="page-shell page-shell-narrow">
+    <section class="success-card">
+        <p class="eyebrow">Área protegida</p>
+        <h1>Mi perfil</h1>
+        <p class="muted">Sesión iniciada como <strong th:text="${currentUserEmail}">usuario@correo.com</strong>.</p>
+        <p>Rol asignado: <strong th:text="${currentUserRole}">USER</strong></p>
+        <a class="button" th:if="${currentUserRole == 'ADMIN'}" th:href="@{/admin}">Abrir administración</a>
+        <a class="button button-secondary" th:href="@{/}">Volver al inicio</a>
+    </section>
+</main>
+
+<footer class="site-footer">Aplicación de registro y autenticación · Spring Boot</footer>
+</body>
+</html>

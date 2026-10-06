@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+
 
 
 
@@ -59,5 +63,36 @@ public class appController {
         model.addAttribute("listUsers", userService.getAllUsers());
         return "users_list";
     }
-    
+
+    @GetMapping("/profile")
+    public String profile(@AuthenticationPrincipal UserDetails currentUser, Model model) {
+        model.addAttribute("currentUserEmail", currentUser.getUsername());
+        model.addAttribute("currentUserRole", currentUser.getAuthorities().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("El usuario autenticado no tiene un rol asignado."))
+                .getAuthority()
+                .substring("ROLE_".length()));
+        return "profile";
+    }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
+    }
+
+    @GetMapping("/login")
+    public String login(
+            @RequestParam(name = "error", required = false) String error,
+            @RequestParam(name = "logout", required = false) String logout,
+            Model model) {
+        if (error != null) {
+            model.addAttribute("loginError", true);
+        }
+        if (logout != null) {
+            model.addAttribute("loggedOut", true);
+        }
+        return "login_form";
+    }
+
+
 }

@@ -39,12 +39,16 @@ public class SecurityConfig {
                                         "/css/**",
                                         "/js/**")
                                 .permitAll()
-                                .requestMatchers("/users").authenticated()
+                                .requestMatchers("/profile").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers("/users", "/admin").hasRole("ADMIN")
                                 .anyRequest().permitAll())
                         .formLogin(form -> form
-                                .usernameParameter("email")
-                                .defaultSuccessUrl("/users", true)
-                                .permitAll())
+                                        .loginPage("/login")
+                                        .loginProcessingUrl("/login")
+                                        .usernameParameter("email")
+                                        .failureUrl("/login?error")
+                                        .defaultSuccessUrl("/profile", true)
+                                        .permitAll())
                         .logout(logout -> logout
                                 .logoutSuccessUrl("/")
                                 .permitAll());

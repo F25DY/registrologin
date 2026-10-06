@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.taller.registrologin.models.Users;
+import com.taller.registrologin.models.UserRole;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -19,7 +20,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        UserRole role = user.getRole();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    public UserRole getRole() {
+        return user.getRole();
     }
 
     @Override
