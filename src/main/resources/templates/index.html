@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Inicio</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}"><span>Registro</span></a>
+    <nav class="site-nav" aria-label="Navegación principal">
+        <a th:href="@{/login}">Iniciar sesión</a>
+        <a class="button button-small" th:href="@{/register}">Crear cuenta</a>
+    </nav>
+</header>
+
+<main class="page-shell">
+    <section class="hero-card">
+        <p class="eyebrow">Registro y autenticación</p>
+        <h1>Pagina de prueba de validación de credenciales Spring Security - MySQL</h1>
+        <div class="action-row">
+            <a class="button" th:href="@{/register}">Crear una cuenta</a>
+            <a class="button button-secondary" th:href="@{/login}">Ya tengo cuenta</a>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">Aplicación de registro y autenticación · Spring Boot</footer>
+</body>
+</html>

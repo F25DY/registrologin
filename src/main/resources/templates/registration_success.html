@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Registro exitoso | RegistroSeguro</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Registro<span>Seguro</span></a>
+    <nav class="site-nav" aria-label="Navegación principal">
+        <a th:href="@{/}">Inicio</a>
+        <a th:href="@{/login}">Iniciar sesión</a>
+    </nav>
+</header>
+
+<main class="page-shell page-shell-narrow">
+    <section class="success-card">
+        <div class="success-icon" aria-hidden="true">✓</div>
+        <p class="eyebrow">Todo listo</p>
+        <h1>Registro exitoso</h1>
+        <p class="muted">Tu cuenta fue creada correctamente. Ya puedes iniciar sesión con tu correo electrónico.</p>
+        <div class="action-row action-row-centered">
+            <a class="button" th:href="@{/login}">Iniciar sesión</a>
+            <a class="button button-secondary" th:href="@{/}">Volver al inicio</a>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">Aplicación de registro y autenticación · Spring Boot</footer>
+</body>
+</html>

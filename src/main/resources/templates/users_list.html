@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Usuarios | RegistroSeguro</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Registro<span>Seguro</span></a>
+    <div class="site-nav">
+        <span class="signed-in">Sesión: <strong th:text="${#authentication.name}">usuario@correo.com</strong></span>
+        <form th:action="@{/logout}" method="post" class="inline-form">
+            <button class="button button-small button-secondary" type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="list-heading">
+        <div>
+            <p class="eyebrow">Área protegida</p>
+            <h1>Usuarios registrados</h1>
+            <p class="muted">Listado de cuentas registradas en la aplicación.</p>
+        </div>
+        <span class="count-badge" th:text="${#lists.size(listUsers) + ' usuarios'}">0 usuarios</span>
+    </section>
+
+    <section class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Correo electrónico</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${listUsers}">
+                    <td data-label="ID" th:text="${user.id}">1</td>
+                    <td data-label="Correo electrónico" th:text="${user.email}">usuario@correo.com</td>
+                    <td data-label="Nombre" th:text="${user.firstName}">Nombre</td>
+                    <td data-label="Apellido" th:text="${user.lastName}">Apellido</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(listUsers)}">
+                    <td class="empty-state" colspan="4">Todavía no hay usuarios registrados.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">Aplicación de registro y autenticación · Spring Boot</footer>
+</body>
+</html>
