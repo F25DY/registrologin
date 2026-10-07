@@ -1,9 +1,0 @@
-﻿Field	Type	Null	Key	Default	Extra
-id	bigint	NO	PRI	NULL	auto_increment
-email	varchar(100)	NO	UNI	NULL	
-password	varchar(100)	NO		NULL	
-first_name	varchar(50)	NO		NULL	
-last_name	varchar(50)	NO		NULL	
-version	description	success
-1	schema init	1
-2	users id auto increment	1
